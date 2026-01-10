@@ -37,23 +37,28 @@ struct ContentView: View {
                     }
                 }
             }
-            .navigationTitle("💰 MoneyFlow")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showingAddExpense = true
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.blue, .purple],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+            .navigationTitle("MoneyFlow")
+            .overlay(alignment: .bottomTrailing) {
+                // Floating Add Button - improved reachability
+                Button(action: {
+                    showingAddExpense = true
+                }) {
+                    Image(systemName: "plus")
+                        .font(.title2.bold())
+                        .foregroundColor(.white)
+                        .frame(width: 60, height: 60)
+                        .background(
+                            LinearGradient(
+                                colors: [.blue, .purple],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
                             )
-                    }
+                        )
+                        .clipShape(Circle())
+                        .shadow(color: .blue.opacity(0.4), radius: 15, x: 0, y: 5)
                 }
+                .padding(.trailing, 20)
+                .padding(.bottom, 20)
             }
             .sheet(isPresented: $showingAddExpense) {
                 AddExpenseView(modelContext: modelContext)
@@ -137,26 +142,46 @@ struct ExpenseRowView: View {
     
     var categoryIcon: String {
         switch expense.category {
-        case "Food": return "🍜"
-        case "Transport": return "🚗"
-        case "Entertainment": return "🎮"
-        case "Shopping": return "🛒"
-        case "Travel": return "✈️"
-        case "Medical": return "💊"
-        default: return "💰"
+        case "Food": return "fork.knife"
+        case "Transport": return "car.fill"
+        case "Entertainment": return "gamecontroller.fill"
+        case "Shopping": return "cart.fill"
+        case "Travel": return "airplane"
+        case "Medical": return "cross.case.fill"
+        default: return "dollarsign.circle.fill"
+        }
+    }
+    
+    var categoryColor: Color {
+        switch expense.category {
+        case "Food": return .orange
+        case "Transport": return .blue
+        case "Entertainment": return .purple
+        case "Shopping": return .pink
+        case "Travel": return .cyan
+        case "Medical": return .red
+        default: return .gray
         }
     }
     
     var body: some View {
         HStack(spacing: 15) {
-            // Category icon
-            Text(categoryIcon)
-                .font(.largeTitle)
+            // Category icon with SF Symbols
+            Image(systemName: categoryIcon)
+                .font(.title2)
+                .foregroundColor(.white)
                 .frame(width: 60, height: 60)
                 .background(
                     Circle()
-                        .fill(.ultraThinMaterial)
+                        .fill(
+                            LinearGradient(
+                                colors: [categoryColor, categoryColor.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                 )
+                .shadow(color: categoryColor.opacity(0.3), radius: 5, x: 0, y: 2)
             
             // Info
             VStack(alignment: .leading, spacing: 4) {

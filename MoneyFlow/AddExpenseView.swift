@@ -50,114 +50,11 @@ struct AddExpenseView: View {
                 
                 ScrollView {
                     VStack(spacing: 20) {
-                        // Smart scanning section
-                        VStack(spacing: 12) {
-                            Text("📸 Smart Capture")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            HStack(spacing: 12) {
-                                // Camera button
-                                Button(action: {
-                                    showingCamera = true
-                                }) {
-                                    VStack(spacing: 4) {
-                                        Image(systemName: "camera.fill")
-                                            .font(.title2)
-                                        Text("Camera")
-                                            .font(.caption)
-                                            .fontWeight(.medium)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(
-                                        LinearGradient(
-                                            colors: [.blue, .cyan],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                    .foregroundColor(.white)
-                                    .cornerRadius(12)
-                                }
-                                
-                                // Photo library button
-                                Button(action: {
-                                    showingImagePicker = true
-                                }) {
-                                    VStack(spacing: 4) {
-                                        Image(systemName: "photo.fill")
-                                            .font(.title2)
-                                        Text("Photos")
-                                            .font(.caption)
-                                            .fontWeight(.medium)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(
-                                        LinearGradient(
-                                            colors: [.purple, .pink],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                    .foregroundColor(.white)
-                                    .cornerRadius(12)
-                                }
-                                
-                                // Voice input button
-                                Button(action: {
-                                    showingVoiceInput = true
-                                }) {
-                                    VStack(spacing: 4) {
-                                        Image(systemName: "mic.fill")
-                                            .font(.title2)
-                                        Text("Voice")
-                                            .font(.caption)
-                                            .fontWeight(.medium)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(
-                                        LinearGradient(
-                                            colors: [.green, .mint],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                    .foregroundColor(.white)
-                                    .cornerRadius(12)
-                                }
-                            }
-                            
-                            // Processing indicator
-                            if isProcessing {
-                                HStack(spacing: 12) {
-                                    ProgressView()
-                                        .progressViewStyle(.circular)
-                                    Text(processingMessage)
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(.blue.opacity(0.1))
-                                )
-                            }
-                        }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.7))
-                                .shadow(color: .blue.opacity(0.1), radius: 10, x: 0, y: 5)
-                        )
-                        
-                        // Amount input
+                        // Amount input - PRIORITY: moved to top
                         VStack(spacing: 8) {
                             Text("Amount")
                                 .font(.headline)
+                                .foregroundColor(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             HStack(spacing: 12) {
@@ -171,49 +68,56 @@ struct AddExpenseView: View {
                                 .padding(.vertical, 8)
                                 .background(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .fill(.ultraThinMaterial)
+                                        .fill(Color(.systemBackground))
                                 )
+                                .shadow(color: .black.opacity(0.05), radius: 2)
                                 
                                 TextField("0.00", text: $amount)
                                     .keyboardType(.decimalPad)
                                     .font(.system(size: 32, weight: .bold, design: .rounded))
                                     .multilineTextAlignment(.trailing)
+                                    .foregroundColor(.primary)
                                     .padding()
                                     .background(
                                         RoundedRectangle(cornerRadius: 15)
-                                            .fill(.ultraThinMaterial)
+                                            .fill(Color(.systemBackground))
                                     )
+                                    .shadow(color: .black.opacity(0.05), radius: 2)
                             }
                         }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.5))
+                                .fill(.white.opacity(0.7))
                         )
                         
                         // Merchant name
                         VStack(spacing: 8) {
                             Text("Merchant")
                                 .font(.headline)
+                                .foregroundColor(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             TextField("e.g., Starbucks", text: $merchant)
+                                .foregroundColor(.primary)
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 15)
-                                        .fill(.ultraThinMaterial)
+                                        .fill(Color(.systemBackground))
+                                        .shadow(color: .black.opacity(0.05), radius: 2)
                                 )
                         }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.5))
+                                .fill(.white.opacity(0.7))
                         )
                         
-                        // Category selection
+                        // Category selection - Consistent SF Symbols
                         VStack(spacing: 8) {
                             Text("Category")
                                 .font(.headline)
+                                .foregroundColor(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             LazyVGrid(columns: [
@@ -236,13 +140,14 @@ struct AddExpenseView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.5))
+                                .fill(.white.opacity(0.7))
                         )
                         
                         // Date picker
                         VStack(spacing: 8) {
                             Text("Date")
                                 .font(.headline)
+                                .foregroundColor(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             DatePicker("", selection: $date, displayedComponents: [.date])
@@ -250,36 +155,106 @@ struct AddExpenseView: View {
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 15)
-                                        .fill(.ultraThinMaterial)
+                                        .fill(Color(.systemBackground))
+                                        .shadow(color: .black.opacity(0.05), radius: 2)
                                 )
                         }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.5))
+                                .fill(.white.opacity(0.7))
                         )
                         
                         // Note
                         VStack(spacing: 8) {
                             Text("Note (Optional)")
                                 .font(.headline)
+                                .foregroundColor(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             TextField("Enter note...", text: $note, axis: .vertical)
+                                .foregroundColor(.primary)
                                 .lineLimit(3...6)
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 15)
-                                        .fill(.ultraThinMaterial)
+                                        .fill(Color(.systemBackground))
+                                        .shadow(color: .black.opacity(0.05), radius: 2)
                                 )
                         }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 20)
+                                .fill(.white.opacity(0.7))
+                        )
+                        
+                        // Smart capture section - MINIMIZED and moved to bottom
+                        VStack(spacing: 12) {
+                            Text("📸 Quick Capture")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            HStack(spacing: 12) {
+                                // Compact camera button
+                                Button(action: { showingCamera = true }) {
+                                    Label("Camera", systemImage: "camera")
+                                        .font(.footnote)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 10)
+                                        .background(.blue.opacity(0.15))
+                                        .foregroundColor(.blue)
+                                        .cornerRadius(10)
+                                }
+                                
+                                // Compact photos button
+                                Button(action: { showingImagePicker = true }) {
+                                    Label("Photos", systemImage: "photo")
+                                        .font(.footnote)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 10)
+                                        .background(.purple.opacity(0.15))
+                                        .foregroundColor(.purple)
+                                        .cornerRadius(10)
+                                }
+                                
+                                // Compact voice button
+                                Button(action: { showingVoiceInput = true }) {
+                                    Label("Voice", systemImage: "mic")
+                                        .font(.footnote)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 10)
+                                        .background(.green.opacity(0.15))
+                                        .foregroundColor(.green)
+                                        .cornerRadius(10)
+                                }
+                            }
+                            
+                            // Processing indicator
+                            if isProcessing {
+                                HStack(spacing: 10) {
+                                    ProgressView()
+                                        .scaleEffect(0.9)
+                                    Text(processingMessage)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(.blue.opacity(0.1))
+                                )
+                            }
+                        }
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
                                 .fill(.white.opacity(0.5))
                         )
                     }
                     .padding()
+                    .padding(.bottom, 30) // Extra padding for home indicator
                 }
             }
             .navigationTitle("Add Expense")
@@ -297,6 +272,7 @@ struct AddExpenseView: View {
                     }
                     .fontWeight(.semibold)
                     .disabled(!isFormValid)
+                    .foregroundColor(isFormValid ? .blue : .gray.opacity(0.5))
                 }
             }
         }
@@ -358,7 +334,7 @@ struct AddExpenseView: View {
         Task {
             await MainActor.run {
                 isProcessing = true
-                processingMessage = "Recognizing receipt..."
+                processingMessage = "Recognizing..."
             }
             
             do {
@@ -413,7 +389,7 @@ struct AddExpenseView: View {
     }
 }
 
-// MARK: - Category Button
+// MARK: - Category Button (SF Symbols consistent style)
 struct CategoryButton: View {
     let category: String
     let isSelected: Bool
@@ -421,25 +397,39 @@ struct CategoryButton: View {
     
     var categoryIcon: String {
         switch category {
-        case "Food": return "🍜"
-        case "Transport": return "🚗"
-        case "Entertainment": return "🎮"
-        case "Shopping": return "🛒"
-        case "Travel": return "✈️"
-        case "Medical": return "💊"
-        default: return "💰"
+        case "Food": return "fork.knife"
+        case "Transport": return "car.fill"
+        case "Entertainment": return "gamecontroller.fill"
+        case "Shopping": return "cart.fill"
+        case "Travel": return "airplane"
+        case "Medical": return "cross.case.fill"
+        default: return "dollarsign.circle.fill"
+        }
+    }
+    
+    var categoryColor: Color {
+        switch category {
+        case "Food": return .orange
+        case "Transport": return .blue
+        case "Entertainment": return .purple
+        case "Shopping": return .pink
+        case "Travel": return .cyan
+        case "Medical": return .red
+        default: return .gray
         }
     }
     
     var body: some View {
         Button(action: action) {
             VStack(spacing: 8) {
-                Text(categoryIcon)
-                    .font(.title)
+                Image(systemName: categoryIcon)
+                    .font(.title2)
+                    .foregroundColor(isSelected ? .white : categoryColor)
                 
                 Text(category)
                     .font(.caption)
                     .fontWeight(isSelected ? .semibold : .regular)
+                    .foregroundColor(isSelected ? .white : .primary)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
@@ -447,19 +437,18 @@ struct CategoryButton: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(isSelected ? 
                           LinearGradient(
-                            colors: [.blue, .purple],
+                            colors: [categoryColor, categoryColor.opacity(0.7)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                           ) : 
                           LinearGradient(
-                            colors: [.gray.opacity(0.1), .gray.opacity(0.1)],
+                            colors: [Color(.systemBackground), Color(.systemBackground)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                           )
                     )
-                    .shadow(color: isSelected ? .blue.opacity(0.3) : .clear, radius: 8, x: 0, y: 4)
+                    .shadow(color: isSelected ? categoryColor.opacity(0.3) : .clear, radius: 8, x: 0, y: 4)
             )
-            .foregroundColor(isSelected ? .white : .primary)
         }
         .buttonStyle(.plain)
     }
