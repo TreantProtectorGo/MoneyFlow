@@ -49,11 +49,12 @@ struct AddExpenseView: View {
                 .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 20) {
-                        // Amount input - PRIORITY: moved to top
-                        VStack(spacing: 8) {
+                    VStack(spacing: 16) {
+                        // Amount input - PRIORITY
+                        VStack(spacing: 6) {
                             Text("Amount")
-                                .font(.headline)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
                                 .foregroundColor(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
@@ -85,33 +86,24 @@ struct AddExpenseView: View {
                                     .shadow(color: .black.opacity(0.05), radius: 2)
                             }
                         }
-                        .padding()
+                        .padding(.horizontal)
+                        .padding(.vertical, 12)
                         .background(
-                            RoundedRectangle(cornerRadius: 20)
+                            RoundedRectangle(cornerRadius: 16)
                                 .fill(.white.opacity(0.7))
                         )
                         
-                        // Merchant name
-                        VStack(spacing: 8) {
-                            Text("Merchant")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            TextField("e.g., Starbucks", text: $merchant)
-                                .foregroundColor(.primary)
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .fill(Color(.systemBackground))
-                                        .shadow(color: .black.opacity(0.05), radius: 2)
-                                )
-                        }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.7))
-                        )
+                        
+                        // Merchant name - inline placeholder
+                        TextField("Merchant (e.g., Starbucks)", text: $merchant)
+                            .foregroundColor(.primary)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(.systemBackground))
+                            )
+                            .shadow(color: .black.opacity(0.05), radius: 2)
+                            .padding(.horizontal)
                         
                         // Category selection - Consistent SF Symbols
                         VStack(spacing: 8) {
@@ -143,27 +135,29 @@ struct AddExpenseView: View {
                                 .fill(.white.opacity(0.7))
                         )
                         
-                        // Date picker
-                        VStack(spacing: 8) {
+                        // Date picker - simple row layout
+                        HStack {
                             Text("Date")
-                                .font(.headline)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
                                 .foregroundColor(.primary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Spacer()
                             
                             DatePicker("", selection: $date, displayedComponents: [.date])
-                                .datePickerStyle(.graphical)
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .fill(Color(.systemBackground))
-                                        .shadow(color: .black.opacity(0.05), radius: 2)
-                                )
+                                .labelsHidden()
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
                         .padding()
                         .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.7))
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(.systemBackground))
                         )
+                        .shadow(color: .black.opacity(0.05), radius: 2)
+                        .padding(.horizontal)
                         
                         // Note
                         VStack(spacing: 8) {
@@ -254,7 +248,7 @@ struct AddExpenseView: View {
                         )
                     }
                     .padding()
-                    .padding(.bottom, 30) // Extra padding for home indicator
+                    .padding(.bottom, 40) // Extra padding for home indicator
                 }
             }
             .navigationTitle("Add Expense")
@@ -407,47 +401,24 @@ struct CategoryButton: View {
         }
     }
     
-    var categoryColor: Color {
-        switch category {
-        case "Food": return .orange
-        case "Transport": return .blue
-        case "Entertainment": return .purple
-        case "Shopping": return .pink
-        case "Travel": return .cyan
-        case "Medical": return .red
-        default: return .gray
-        }
-    }
-    
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 Image(systemName: categoryIcon)
-                    .font(.title2)
-                    .foregroundColor(isSelected ? .white : categoryColor)
+                    .font(.title3)
+                    .foregroundColor(isSelected ? .white : .gray)
                 
                 Text(category)
-                    .font(.caption)
+                    .font(.caption2)
                     .fontWeight(isSelected ? .semibold : .regular)
-                    .foregroundColor(isSelected ? .white : .primary)
+                    .foregroundColor(isSelected ? .white : .secondary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, 10)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? 
-                          LinearGradient(
-                            colors: [categoryColor, categoryColor.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                          ) : 
-                          LinearGradient(
-                            colors: [Color(.systemBackground), Color(.systemBackground)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                          )
-                    )
-                    .shadow(color: isSelected ? categoryColor.opacity(0.3) : .clear, radius: 8, x: 0, y: 4)
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(isSelected ? .blue : Color(.systemBackground))
+                    .shadow(color: isSelected ? .blue.opacity(0.2) : .clear, radius: 4, x: 0, y: 2)
             )
         }
         .buttonStyle(.plain)

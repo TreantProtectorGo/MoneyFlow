@@ -17,13 +17,13 @@ struct ExpenseDetailView: View {
     
     var categoryIcon: String {
         switch expense.category {
-        case "Food": return "🍜"
-        case "Transport": return "🚗"
-        case "Entertainment": return "🎮"
-        case "Shopping": return "🛒"
-        case "Travel": return "✈️"
-        case "Medical": return "💊"
-        default: return "💰"
+        case "Food": return "fork.knife"
+        case "Transport": return "car.fill"
+        case "Entertainment": return "gamecontroller.fill"
+        case "Shopping": return "cart.fill"
+        case "Travel": return "airplane"
+        case "Medical": return "cross.case.fill"
+        default: return "dollarsign.circle.fill"
         }
     }
     
@@ -39,32 +39,28 @@ struct ExpenseDetailView: View {
             
             ScrollView {
                 VStack(spacing: 24) {
-                    // 類別圖示
-                    Text(categoryIcon)
-                        .font(.system(size: 80))
-                        .frame(width: 140, height: 140)
-                        .background(
-                            Circle()
-                                .fill(.ultraThinMaterial)
-                                .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
-                        )
-                        .padding(.top, 20)
+                    // Category icon - unified color
+                    ZStack {
+                        Circle()
+                            .fill(.blue)
+                            .frame(width: 100, height: 100)
+                        
+                        Image(systemName: categoryIcon)
+                            .font(.system(size: 50))
+                            .foregroundColor(.white)
+                    }
+                    .shadow(color: .blue.opacity(0.2), radius: 15, x: 0, y: 5)
+                    .padding(.top, 20)
                     
                     // 商家名稱
                     Text(expense.merchant)
                         .font(.title)
                         .fontWeight(.bold)
                     
-                    // 金額
+                    // Amount - solid color for readability
                     Text("\(expense.currency) $\(expense.amount, specifier: "%.2f")")
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.blue, .purple],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .font(.system(size: 42, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
                     
                     // Detail information
                     VStack(spacing: 16) {
@@ -97,40 +93,24 @@ struct ExpenseDetailView: View {
                         }
                     }
                     .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(.white.opacity(0.7))
-                            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-                    )
-                    
-                    // Edit button
-                    Button(action: {
-                        showingEditSheet = true
-                    }) {
-                        HStack {
-                            Image(systemName: "pencil")
-                            Text("Edit Expense")
-                                .fontWeight(.semibold)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
                         .background(
-                            LinearGradient(
-                                colors: [.blue, .purple],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(.white.opacity(0.8))
+                                .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
                         )
-                        .foregroundColor(.white)
-                        .cornerRadius(15)
-                        .shadow(color: .blue.opacity(0.3), radius: 10, x: 0, y: 5)
-                    }
                 }
                 .padding()
             }
         }
-        .navigationTitle("Expense Details")
+        .navigationTitle("Details")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Edit") {
+                    showingEditSheet = true
+                }
+            }
+        }
         .sheet(isPresented: $showingEditSheet) {
             EditExpenseView(expense: expense, modelContext: modelContext)
         }

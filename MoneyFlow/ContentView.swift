@@ -13,6 +13,12 @@ struct ContentView: View {
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @State private var showingAddExpense = false
     
+    
+    var currentMonthYear: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter.string(from: Date())
+    }
     var body: some View {
         NavigationStack {
             ZStack {
@@ -25,6 +31,15 @@ struct ContentView: View {
                 .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
+                    // Month header
+                    Text(currentMonthYear)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 8)
+                        .padding(.bottom, 12)
+                    
                     // Total expense card
                     TotalExpenseCard(expenses: expenses)
                         .padding()
@@ -37,7 +52,7 @@ struct ContentView: View {
                     }
                 }
             }
-            .navigationTitle("MoneyFlow")
+            .navigationBarTitleDisplayMode(.inline)
             .overlay(alignment: .bottomTrailing) {
                 // Floating Add Button - improved reachability
                 Button(action: {
@@ -76,27 +91,22 @@ struct TotalExpenseCard: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Text("Total Expenses")
-                .font(.subheadline)
+                .font(.caption)
                 .foregroundColor(.secondary)
             
             Text("HK$ \(totalAmount, specifier: "%.2f")")
-                .font(.system(size: 36, weight: .bold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.blue, .purple],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
             
             Text("\(expenses.count) transactions")
-                .font(.caption)
+                .font(.caption2)
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(.ultraThinMaterial)
@@ -165,61 +175,55 @@ struct ExpenseRowView: View {
     }
     
     var body: some View {
-        HStack(spacing: 15) {
-            // Category icon with SF Symbols
+        HStack(spacing: 12) {
+            // Category icon - unified color scheme
             Image(systemName: categoryIcon)
-                .font(.title2)
+                .font(.title3)
                 .foregroundColor(.white)
-                .frame(width: 60, height: 60)
+                .frame(width: 50, height: 50)
                 .background(
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [categoryColor, categoryColor.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(.blue)
                 )
-                .shadow(color: categoryColor.opacity(0.3), radius: 5, x: 0, y: 2)
             
             // Info
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(expense.merchant)
-                    .font(.headline)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
                 
-                HStack {
+                HStack(spacing: 8) {
                     Text(expense.category)
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .font(.caption2)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
                         .background(
                             Capsule()
-                                .fill(.blue.opacity(0.2))
+                                .fill(.blue.opacity(0.15))
                         )
+                        .foregroundColor(.blue)
                     
                     Text(expense.date, style: .date)
-                        .font(.caption)
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
             }
             
             Spacer()
             
-            // Amount
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("\(expense.currency) $\(expense.amount, specifier: "%.2f")")
-                    .font(.system(.body, design: .rounded, weight: .semibold))
-                    .foregroundColor(.primary)
-            }
+            // Amount - solid color
+            Text("\(expense.currency) $\(expense.amount, specifier: "%.2f")")
+                .font(.system(.callout, design: .rounded, weight: .semibold))
+                .foregroundColor(.primary)
         }
-        .padding()
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 15)
                 .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+                .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 1)
         )
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
     }
 }
 
