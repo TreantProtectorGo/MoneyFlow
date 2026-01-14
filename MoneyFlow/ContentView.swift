@@ -175,18 +175,23 @@ struct ExpenseListView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) {
+                        deleteExpense(expense)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
             }
-            .onDelete(perform: deleteExpenses)
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
     }
     
-    private func deleteExpenses(offsets: IndexSet) {
+    private func deleteExpense(_ expense: Expense) {
         withAnimation {
-            for index in offsets {
-                modelContext.delete(expenses[index])
-            }
+            modelContext.delete(expense)
+            try? modelContext.save()
         }
     }
 }

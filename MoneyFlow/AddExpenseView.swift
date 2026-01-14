@@ -18,6 +18,8 @@ struct AddExpenseView: View {
     @State private var date: Date = Date()
     @State private var description: String = ""
     
+    @FocusState private var isAmountFocused: Bool
+    
     let categories = ["Food", "Transport", "Entertainment", "Shopping", "Travel", "Medical", "Other"]
     let currencies = ["HKD", "USD", "CNY", "JPY", "EUR", "GBP"]
     
@@ -45,6 +47,7 @@ struct AddExpenseView: View {
                                     .font(.system(size: 36, weight: .bold, design: .rounded))
                                     .multilineTextAlignment(.trailing)
                                     .foregroundColor(.primary)
+                                    .focused($isAmountFocused)
                             }
                             .padding()
                             .background(
@@ -129,6 +132,12 @@ struct AddExpenseView: View {
             }
             .navigationTitle("Add Expense")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                // Auto-focus amount field - saves 1 tap!
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    isAmountFocused = true
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
