@@ -14,11 +14,10 @@ struct EditExpenseView: View {
     let modelContext: ModelContext
     
     @State private var amount: String = ""
-    @State private var merchant: String = ""
     @State private var category: String = ""
     @State private var currency: String = ""
     @State private var date: Date = Date()
-    @State private var note: String = ""
+    @State private var description: String = ""
     
     let categories = ["Food", "Transport", "Entertainment", "Shopping", "Travel", "Medical", "Other"]
     let currencies = ["HKD", "USD", "CNY", "JPY", "EUR", "GBP"]
@@ -26,143 +25,107 @@ struct EditExpenseView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
-                LinearGradient(
-                    colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.1)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                // Background
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 20) {
-                        // Amount input section
-                        VStack(spacing: 8) {
-                            Text("Amount")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
+                        // Amount
+                        VStack(spacing: 12) {
                             HStack(spacing: 12) {
-                                // Currency picker
                                 Picker("Currency", selection: $currency) {
                                     ForEach(currencies, id: \.self) { curr in
                                         Text(curr).tag(curr)
                                     }
                                 }
                                 .pickerStyle(.menu)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(.ultraThinMaterial)
-                                )
                                 
                                 TextField("0.00", text: $amount)
                                     .keyboardType(.decimalPad)
-                                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                                    .font(.system(size: 36, weight: .bold, design: .rounded))
                                     .multilineTextAlignment(.trailing)
-                                    .padding()
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 15)
-                                            .fill(.ultraThinMaterial)
-                                    )
+                                    .foregroundColor(.primary)
                             }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(.systemBackground))
+                            )
                         }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.5))
-                        )
+                        .padding(.horizontal)
                         
-                        // Merchant name
-                        VStack(spacing: 8) {
-                            Text("Merchant")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            TextField("e.g., Starbucks", text: $merchant)
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .fill(.ultraThinMaterial)
-                                )
-                        }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.5))
-                        )
-                        
-                        // Category selection
-                        VStack(spacing: 8) {
-                            Text("Category")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            LazyVGrid(columns: [
-                                GridItem(.flexible()),
-                                GridItem(.flexible()),
-                                GridItem(.flexible())
-                            ], spacing: 12) {
-                                ForEach(categories, id: \.self) { cat in
-                                    CategoryButton(
-                                        category: cat,
-                                        isSelected: category == cat
-                                    ) {
-                                        withAnimation(.spring(response: 0.3)) {
-                                            category = cat
+                        // Category & Date Card
+                        VStack(spacing: 0) {
+                            // Category
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Category")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 16)
+                                
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 12) {
+                                        ForEach(categories, id: \.self) { cat in
+                                            CategoryChip(
+                                                category: cat,
+                                                isSelected: category == cat
+                                            ) {
+                                                withAnimation(.spring(response: 0.3)) {
+                                                    category = cat
+                                                }
+                                            }
                                         }
                                     }
+                                    .padding(.horizontal, 16)
                                 }
                             }
-                        }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.5))
-                        )
-                        
-                        // Date picker
-                        VStack(spacing: 8) {
-                            Text("Date")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 12)
                             
-                            DatePicker("", selection: $date, displayedComponents: [.date])
-                                .datePickerStyle(.graphical)
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .fill(.ultraThinMaterial)
-                                )
-                        }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.5))
-                        )
-                        
-                        // Note
-                        VStack(spacing: 8) {
-                            Text("Note (Optional)")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Divider()
+                                .padding(.leading, 16)
                             
-                            TextField("Enter note...", text: $note, axis: .vertical)
-                                .lineLimit(3...6)
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .fill(.ultraThinMaterial)
-                                )
+                            // Date
+                            HStack {
+                                Text("Date")
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                DatePicker("", selection: $date, displayedComponents: [.date])
+                                    .labelsHidden()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
                         }
-                        .padding()
                         .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(.white.opacity(0.5))
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(.systemBackground))
                         )
+                        .padding(.horizontal)
+                        
+                        // Description - OPTIONAL
+                        VStack(spacing: 0) {
+                            HStack(alignment: .top) {
+                                TextField("Description (Optional)", text: $description, axis: .vertical)
+                                    .foregroundColor(.primary)
+                                    .lineLimit(2...4)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(.systemBackground))
+                        )
+                        .padding(.horizontal)
                     }
-                    .padding()
+                    .padding(.top, 8)
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle("Edit Expense")
@@ -180,36 +143,44 @@ struct EditExpenseView: View {
                     }
                     .fontWeight(.semibold)
                     .disabled(!isFormValid)
+                    .foregroundColor(isFormValid ? .blue : .gray.opacity(0.5))
                 }
             }
             .onAppear {
                 // Load existing data
                 amount = String(expense.amount)
-                merchant = expense.merchant
                 category = expense.category
                 currency = expense.currency
                 date = expense.date
-                note = expense.note ?? ""
+                
+                // Load description: if merchant == category, it was auto-generated
+                description = expense.merchant == expense.category ? "" : expense.merchant
             }
         }
     }
     
     private var isFormValid: Bool {
+        // Only amount required
         guard let amountValue = Double(amount), amountValue > 0 else {
             return false
         }
-        return !merchant.trimmingCharacters(in: .whitespaces).isEmpty
+        return true
     }
     
     private func saveExpense() {
         guard let amountValue = Double(amount) else { return }
         
+        // Smart default: Use description if provided, otherwise use category name
+        let merchantName = description.trimmingCharacters(in: .whitespaces).isEmpty 
+            ? category 
+            : description.trimmingCharacters(in: .whitespaces)
+        
         expense.amount = amountValue
         expense.currency = currency
-        expense.merchant = merchant
+        expense.merchant = merchantName
         expense.category = category
         expense.date = date
-        expense.note = note.isEmpty ? nil : note
+        expense.note = nil
         
         do {
             try modelContext.save()

@@ -12,6 +12,8 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @State private var showingAddExpense = false
+    @State private var showingCamera = false
+    @State private var showingVoiceInput = false
     
     
     var currentMonthYear: String {
@@ -31,14 +33,35 @@ struct ContentView: View {
                 .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Month header
-                    Text(currentMonthYear)
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 8)
-                        .padding(.bottom, 12)
+                    // Month navigation
+                    HStack {
+                        Button(action: {
+                            // TODO: Navigate to previous month
+                        }) {
+                            Image(systemName: "chevron.left")
+                                .font(.title3)
+                                .foregroundColor(.primary)
+                        }
+                        
+                        Spacer()
+                        
+                        Text(currentMonthYear)
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            // TODO: Navigate to next month
+                        }) {
+                            Image(systemName: "chevron.right")
+                                .font(.title3)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 12)
                     
                     // Total expense card
                     TotalExpenseCard(expenses: expenses)
@@ -54,10 +77,26 @@ struct ContentView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .overlay(alignment: .bottomTrailing) {
-                // Floating Add Button - improved reachability
-                Button(action: {
-                    showingAddExpense = true
-                }) {
+                // Main Add Button
+                Menu {
+                    Button(action: {
+                        showingAddExpense = true
+                    }) {
+                        Label("Manual Entry", systemImage: "pencil")
+                    }
+                    
+                    Button(action: {
+                        showingCamera = true
+                    }) {
+                        Label("Scan Receipt", systemImage: "camera")
+                    }
+                    
+                    Button(action: {
+                        showingVoiceInput = true
+                    }) {
+                        Label("Voice Input", systemImage: "mic")
+                    }
+                } label: {
                     Image(systemName: "plus")
                         .font(.title2.bold())
                         .foregroundColor(.white)
@@ -78,6 +117,12 @@ struct ContentView: View {
             .sheet(isPresented: $showingAddExpense) {
                 AddExpenseView(modelContext: modelContext)
             }
+.sheet(isPresented: $showingCamera) {
+    CameraView { _ in }
+}
+.sheet(isPresented: $showingVoiceInput) {
+    VoiceInputView { _ in }
+}
         }
     }
 }
