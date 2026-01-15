@@ -14,12 +14,30 @@ struct ContentView: View {
     @State private var showingAddExpense = false
     @State private var showingCamera = false
     @State private var showingVoiceInput = false
+    @State private var selectedDate = Date()
+    @State private var showingMonthPicker = false
     
     
     var currentMonthYear: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
-        return formatter.string(from: Date())
+        return formatter.string(from: selectedDate)
+    }
+    
+    var filteredExpenses: [Expense] {
+        Calendar.filterExpenses(expenses, for: selectedDate)
+    }
+    
+    func previousMonth() {
+        if let newDate = Calendar.previousMonth(from: selectedDate) {
+            selectedDate = newDate
+        }
+    }
+    
+    func nextMonth() {
+        if let newDate = Calendar.nextMonth(from: selectedDate) {
+            selectedDate = newDate
+        }
     }
     var body: some View {
         NavigationStack {
@@ -35,9 +53,7 @@ struct ContentView: View {
                 VStack(spacing: 0) {
                     // Month navigation
                     HStack {
-                        Button(action: {
-                            // TODO: Navigate to previous month
-                        }) {
+                        Button(action: previousMonth) {
                             Image(systemName: "chevron.left")
                                 .font(.title3)
                                 .foregroundColor(.primary)
@@ -45,15 +61,18 @@ struct ContentView: View {
                         
                         Spacer()
                         
-                        Text(currentMonthYear)
-                            .font(.title2)
-                            .fontWeight(.semibold)
+                        Button(action: {
+                            showingMonthPicker = true
+                        }) {
+                            Text(currentMonthYear)
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                        }
+                        .buttonStyle(.plain)
                         
                         Spacer()
                         
-                        Button(action: {
-                            // TODO: Navigate to next month
-                        }) {
+                        Button(action: nextMonth) {
                             Image(systemName: "chevron.right")
                                 .font(.title3)
                                 .foregroundColor(.primary)
@@ -64,14 +83,14 @@ struct ContentView: View {
                     .padding(.bottom, 12)
                     
                     // Total expense card
-                    TotalExpenseCard(expenses: expenses)
+                    TotalExpenseCard(expenses: filteredExpenses)
                         .padding()
                     
                     // Expense list
-                    if expenses.isEmpty {
+                    if filteredExpenses.isEmpty {
                         EmptyStateView()
                     } else {
-                        ExpenseListView(expenses: expenses, modelContext: modelContext)
+                        ExpenseListView(expenses: filteredExpenses, modelContext: modelContext)
                     }
                 }
             }
@@ -117,16 +136,19 @@ struct ContentView: View {
             .sheet(isPresented: $showingAddExpense) {
                 AddExpenseView(modelContext: modelContext)
             }
-.sheet(isPresented: $showingCamera) {
-    CameraView { _ in }
-}
-.sheet(isPresented: $showingVoiceInput) {
-    VoiceInputView { _ in }
-}
+            .sheet(isPresented: $showingCamera) {
+                CameraView { _ in }
+            }
+            .sheet(isPresented: $showingVoiceInput) {
+                VoiceInputView { _ in }
+            }
+            .sheet(isPresented: $showingMonthPicker) {
+                MonthPickerView(selectedDate: $selectedDate)
+                    .presentationDetents([.height(250)])
+            }
         }
     }
-}
-
+    }
 // MARK: - Total Expense Card
 struct TotalExpenseCard: View {
     let expenses: [Expense]
@@ -136,26 +158,26 @@ struct TotalExpenseCard: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(spacing: 12) {
             Text("Total Expenses")
                 .font(.caption)
                 .foregroundColor(.secondary)
             
-            Text("HK$ \(totalAmount, specifier: "%.2f")")
+            Text("$\(totalAmount, specifier: "%.2f")")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(.primary)
             
-            Text("\(expenses.count) transactions")
+            Text("\(expenses.count) transaction\(expenses.count == 1 ? "" : "s")")
                 .font(.caption2)
                 .foregroundColor(.secondary)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
+        .padding(.horizontal, 16)
         .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
         )
     }
 }
@@ -168,9 +190,7 @@ struct ExpenseListView: View {
     var body: some View {
         List {
             ForEach(expenses) { expense in
-                NavigationLink {
-                    ExpenseDetailView(expense: expense, modelContext: modelContext)
-                } label: {
+                NavigationLink(destination: ExpenseDetailView(expense: expense, modelContext: modelContext)) {
                     ExpenseRowView(expense: expense)
                 }
                 .listRowBackground(Color.clear)
@@ -212,18 +232,6 @@ struct ExpenseRowView: View {
         }
     }
     
-    var categoryColor: Color {
-        switch expense.category {
-        case "Food": return .orange
-        case "Transport": return .blue
-        case "Entertainment": return .purple
-        case "Shopping": return .pink
-        case "Travel": return .cyan
-        case "Medical": return .red
-        default: return .gray
-        }
-    }
-    
     var body: some View {
         HStack(spacing: 12) {
             // Category icon - unified color scheme
@@ -245,15 +253,13 @@ struct ExpenseRowView: View {
                 HStack(spacing: 8) {
                     Text(expense.category)
                         .font(.caption2)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(
-                            Capsule()
-                                .fill(.blue.opacity(0.15))
-                        )
-                        .foregroundColor(.blue)
+                        .foregroundColor(.secondary)
                     
-                    Text(expense.date, style: .date)
+                    Text("•")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    Text(expense.date.formatted(date: .abbreviated, time: .omitted))
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
@@ -261,26 +267,27 @@ struct ExpenseRowView: View {
             
             Spacer()
             
-            // Amount - solid color
-            Text("\(expense.currency) $\(expense.amount, specifier: "%.2f")")
-                .font(.system(.callout, design: .rounded, weight: .semibold))
-                .foregroundColor(.primary)
+            // Amount - solid color for readability
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("\(expense.currency)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                
+                Text("$\(expense.amount, specifier: "%.2f")")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 1)
-        )
+        .padding(.horizontal, 2)
         .padding(.vertical, 2)
     }
 }
 
-// MARK: - Empty State View
+// MARK: - Empty State
 struct EmptyStateView: View {
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             Image(systemName: "tray")
                 .font(.system(size: 80))
                 .foregroundColor(.secondary.opacity(0.5))
@@ -302,3 +309,4 @@ struct EmptyStateView: View {
     ContentView()
         .modelContainer(for: [Expense.self, User.self, Group.self], inMemory: true)
 }
+
