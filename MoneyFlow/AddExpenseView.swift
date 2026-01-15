@@ -200,15 +200,7 @@ struct CategoryChip: View {
     let action: () -> Void
     
     var categoryIcon: String {
-        switch category {
-        case "Food": return "fork.knife"
-        case "Transport": return "car.fill"
-        case "Entertainment": return "gamecontroller.fill"
-        case "Shopping": return "cart.fill"
-        case "Travel": return "airplane"
-        case "Medical": return "cross.case.fill"
-        default: return "dollarsign.circle.fill"
-        }
+        CategoryManager.shared.icon(for: category)
     }
     
     var body: some View {

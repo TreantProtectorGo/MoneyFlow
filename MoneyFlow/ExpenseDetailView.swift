@@ -16,15 +16,7 @@ struct ExpenseDetailView: View {
     @State private var showingEditSheet = false
     
     var categoryIcon: String {
-        switch expense.category {
-        case "Food": return "fork.knife"
-        case "Transport": return "car.fill"
-        case "Entertainment": return "gamecontroller.fill"
-        case "Shopping": return "cart.fill"
-        case "Travel": return "airplane"
-        case "Medical": return "cross.case.fill"
-        default: return "dollarsign.circle.fill"
-        }
+        CategoryManager.shared.icon(for: expense.category)
     }
     
     var body: some View {
