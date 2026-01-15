@@ -42,33 +42,33 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
-                LinearGradient(
-                    colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.1)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
-                    // Month navigation
+                    // Month navigation 
                     HStack {
                         Button(action: previousMonth) {
                             Image(systemName: "chevron.left")
                                 .font(.title3)
                                 .foregroundColor(.primary)
+                                .frame(width: 44, height: 44)
+                                .glassEffect(.regular.interactive(), in: Circle())
+                                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                         }
                         
                         Spacer()
                         
-                        Button(action: {
-                            showingMonthPicker = true
-                        }) {
-                            Text(currentMonthYear)
-                                .font(.title2)
-                                .fontWeight(.semibold)
+                        Button(action: { showingMonthPicker = true }) {
+                            HStack(spacing: 8) {
+                                Text(currentMonthYear)
+                                    .font(.system(.title3, design: .rounded).weight(.bold))
+                                    .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                                Image(systemName: "chevron.down").font(.caption).bold()
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .glassEffect(.regular.interactive(), in: Capsule())
                         }
-                        .buttonStyle(.plain)
+                        .foregroundStyle(.primary)
                         
                         Spacer()
                         
@@ -76,15 +76,22 @@ struct ContentView: View {
                             Image(systemName: "chevron.right")
                                 .font(.title3)
                                 .foregroundColor(.primary)
+                                .frame(width: 44, height: 44)
+                                .glassEffect(.regular.interactive(), in: Circle())
+                                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                         }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 8)
                     
                     // Total expense card
                     TotalExpenseCard(expenses: filteredExpenses)
                         .padding()
+                        .glassEffect(in: .rect(cornerRadius: 16.0))
+                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
                     
                     // Expense list
                     if filteredExpenses.isEmpty {
@@ -117,18 +124,11 @@ struct ContentView: View {
                     }
                 } label: {
                     Image(systemName: "plus")
-                        .font(.title2.bold())
-                        .foregroundColor(.white)
+                        .font(.title3)
+                        .foregroundColor(.primary)
                         .frame(width: 60, height: 60)
-                        .background(
-                            LinearGradient(
-                                colors: [.blue, .purple],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .clipShape(Circle())
-                        .shadow(color: .blue.opacity(0.4), radius: 15, x: 0, y: 5)
+                        .glassEffect(.regular.interactive(), in: Circle())
+                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                 }
                 .padding(.trailing, 20)
                 .padding(.bottom, 20)
@@ -174,11 +174,6 @@ struct TotalExpenseCard: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
-        )
     }
 }
 
