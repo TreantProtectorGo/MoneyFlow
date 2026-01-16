@@ -52,20 +52,19 @@ struct VoiceInputView: View {
                         .fontWeight(.semibold)
                     
                     // Recognized text
-                    if !speechService.recognizedText.isEmpty {
+                    if !speechService.recognizedText.isEmpty || speechService.isRecording {
                         ScrollView {
-                            Text(speechService.recognizedText)
+                            TextField("Tap to edit text...", text: $speechService.recognizedText, axis: .vertical)
                                 .font(.body)
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .fill(.ultraThinMaterial)
-                                )
+                                .background(Color.white.opacity(0.8))
+                                .cornerRadius(12)
                         }
-                        .frame(maxHeight: 150)
+                        .frame(maxHeight: 200)
                         .padding(.horizontal)
                     }
+
                     
                     Spacer()
                     
@@ -150,37 +149,13 @@ struct VoiceInputView: View {
     }
     
     private func startRecording() {
-        #if targetEnvironment(simulator)
-        // Simulator: simulate voice input
-        simulateVoiceInput()
-        #else
         do {
             try speechService.startRecording()
         } catch {
             alertMessage = "Failed to start recording: \(error.localizedDescription)"
             showingAlert = true
         }
-        #endif
     }
-    
-    #if targetEnvironment(simulator)
-    private func simulateVoiceInput() {
-        // Simulate recording state
-        speechService.isRecording = true
-        speechService.recognizedText = ""
-        
-        Task {
-            // Simulate typing effect
-            let sampleText = "在 Starbucks 花了 45 元買咖啡"
-            for (index, _) in sampleText.enumerated() {
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
-                await MainActor.run {
-                    speechService.recognizedText = String(sampleText.prefix(index + 1))
-                }
-            }
-        }
-    }
-    #endif
     
     private func stopAndProcess() {
         speechService.stopRecording()
