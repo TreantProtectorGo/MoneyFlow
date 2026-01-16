@@ -19,43 +19,50 @@ struct CurrencyConfiguration: CurrencyConfigurable {
     let code: String
     let symbol: String
     let name: String
+    let countries: [String]  // Countries that use this currency
     
     // MARK: - Predefined Currencies
     
     static let hkd = CurrencyConfiguration(
         code: "HKD",
         symbol: "HK$",
-        name: "Hong Kong Dollar"
+        name: "Hong Kong Dollar",
+        countries: ["Hong Kong"]
     )
     
     static let usd = CurrencyConfiguration(
         code: "USD",
         symbol: "$",
-        name: "US Dollar"
+        name: "US Dollar",
+        countries: ["United States", "Puerto Rico", "Guam"]
     )
     
     static let cny = CurrencyConfiguration(
         code: "CNY",
         symbol: "¥",
-        name: "Chinese Yuan"
+        name: "Chinese Yuan",
+        countries: ["China"]
     )
     
     static let jpy = CurrencyConfiguration(
         code: "JPY",
         symbol: "¥",
-        name: "Japanese Yen"
+        name: "Japanese Yen",
+        countries: ["Japan"]
     )
     
     static let eur = CurrencyConfiguration(
         code: "EUR",
         symbol: "€",
-        name: "Euro"
+        name: "Euro",
+        countries: ["Germany", "France", "Italy", "Spain", "Netherlands", "Belgium", "Austria", "Ireland", "Portugal", "Greece", "Finland"]
     )
     
     static let gbp = CurrencyConfiguration(
         code: "GBP",
         symbol: "£",
-        name: "British Pound"
+        name: "British Pound",
+        countries: ["United Kingdom"]
     )
 }
 
@@ -109,5 +116,12 @@ class CurrencyManager {
     /// - Returns: Boolean indicating validity
     func isValid(code: String) -> Bool {
         currencies.contains { $0.code == code }
+    }
+    
+    /// Get currency code for a specific country
+    /// - Parameter country: The country name
+    /// - Returns: Currency code or nil if not found
+    func currencyCode(for country: String) -> String? {
+        currencies.first { $0.countries.contains(country) }?.code
     }
 }

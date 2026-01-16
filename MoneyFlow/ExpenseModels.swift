@@ -13,10 +13,15 @@ final class Expense {
     var note: String?
     @Attribute(.externalStorage) var receiptImageData: Data?
     
+    // Location fields
+    var latitude: Double?
+    var longitude: Double?
+    var locationAddress: String?
+    
     var paidBy: User?
     var belongsToGroup: Group?
     
-    init(amount: Double, currency: String = "HKD", merchant: String, category: String, date: Date = Date(), note: String? = nil, receiptImageData: Data? = nil) {
+    init(amount: Double, currency: String = "HKD", merchant: String, category: String, date: Date = Date(), note: String? = nil, receiptImageData: Data? = nil, latitude: Double? = nil, longitude: Double? = nil, locationAddress: String? = nil) {
         self.id = UUID()
         self.amount = amount
         self.currency = currency
@@ -25,6 +30,14 @@ final class Expense {
         self.date = date
         self.note = note
         self.receiptImageData = receiptImageData
+        self.latitude = latitude
+        self.longitude = longitude
+        self.locationAddress = locationAddress
+    }
+    
+    /// Check if expense has location
+    var hasLocation: Bool {
+        latitude != nil && longitude != nil
     }
 }
 

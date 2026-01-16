@@ -22,12 +22,8 @@ struct ExpenseDetailView: View {
     var body: some View {
         ZStack {
             // Background gradient
-            LinearGradient(
-                colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.1)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Color(.systemGroupedBackground)
+                .ignoresSafeArea()
             
             ScrollView {
                 VStack(spacing: 24) {
@@ -44,7 +40,6 @@ struct ExpenseDetailView: View {
                     .shadow(color: .blue.opacity(0.2), radius: 15, x: 0, y: 5)
                     .padding(.top, 20)
                     
-                    // 商家名稱
                     Text(expense.merchant)
                         .font(.title)
                         .fontWeight(.bold)

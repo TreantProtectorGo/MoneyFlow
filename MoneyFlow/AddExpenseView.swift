@@ -18,6 +18,10 @@ struct AddExpenseView: View {
     @State private var date: Date = Date()
     @State private var description: String = ""
     
+    // Location
+    @State private var locationData: LocationData?
+    @State private var isLoadingLocation: Bool = false
+    
     @FocusState private var isAmountFocused: Bool
     
     var categories: [String] { CategoryManager.shared.allCategoryNames }
@@ -133,6 +137,55 @@ struct AddExpenseView: View {
                         )
                         .glassEffect(.regular, in: .rect(cornerRadius: 24))
                         .padding(.horizontal)
+                        
+                        // Location Card
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Text("Location")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                
+                                Spacer()
+                                
+                                if isLoadingLocation {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Button(action: {
+                                        Task {
+                                            isLoadingLocation = true
+                                            locationData = await LocationService.shared.getCurrentLocation()
+                                            if let suggestedCurrency = LocationService.shared.suggestCurrency(for: locationData?.country) {
+                                                currency = suggestedCurrency
+                                            }
+                                            isLoadingLocation = false
+                                        }
+                                    }) {
+                                        Image(systemName: locationData != nil ? "arrow.clockwise" : "location.circle")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(.blue)
+                                    }
+                                }
+                            }
+                            
+                            if let location = locationData {
+                                Text(location.displayString)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(2)
+                            } else {
+                                Text("Tap to add location")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(.systemBackground))
+                        )
+                        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+                        .padding(.horizontal)
                     }
                     .padding(.top, 8)
                     .padding(.bottom, 40)
@@ -144,6 +197,16 @@ struct AddExpenseView: View {
                 // Auto-focus amount field - saves 1 tap!
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     isAmountFocused = true
+                }
+                
+                // Auto-request location
+                Task {
+                    isLoadingLocation = true
+                    locationData = await LocationService.shared.getCurrentLocation()
+                    if let suggestedCurrency = LocationService.shared.suggestCurrency(for: locationData?.country) {
+                        currency = suggestedCurrency
+                    }
+                    isLoadingLocation = false
                 }
             }
             .toolbar {
@@ -187,7 +250,10 @@ struct AddExpenseView: View {
             merchant: merchantName,
             category: category,
             date: date,
-            note: nil  // We've combined merchant + note into one field
+            note: nil,
+            latitude: locationData?.latitude,
+            longitude: locationData?.longitude,
+            locationAddress: locationData?.displayString
         )
         
         modelContext.insert(newExpense)

@@ -136,10 +136,11 @@ struct ContentView: View {
                                     .font(.system(size: 18, weight: .medium))
                                     .foregroundColor(hasActiveFilters ? .blue : .secondary)
                                     .frame(width: 44, height: 44)
+                                    .glassEffect(.regular.interactive(), in: Circle())
                                     .background(
                                         Circle()
                                             .fill(Color.white)
-                                            .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
+                                            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                                     )
                             }
                         }

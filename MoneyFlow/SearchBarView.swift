@@ -45,8 +45,9 @@ struct SearchBarView: View {
                 .background(
                     Capsule()
                         .fill(Color.white)
-                        .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 4)
                 )
+                .glassEffect(.regular.interactive(), in: Capsule())
+                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                 
                 // Cancel Button
                 Button(action: {
@@ -83,8 +84,9 @@ struct SearchBarView: View {
                     .background(
                         Capsule()
                             .fill(Color.white)
-                            .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
                     )
+                    .glassEffect(.regular.interactive(), in: Capsule())
+                    .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                 }
             }
         }
