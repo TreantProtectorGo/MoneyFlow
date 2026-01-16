@@ -20,13 +20,9 @@ struct VoiceInputView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
-                LinearGradient(
-                    colors: [Color.purple.opacity(0.1), Color.pink.opacity(0.1)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                // Background
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
                 
                 VStack(spacing: 30) {
                     Spacer()
@@ -51,7 +47,7 @@ struct VoiceInputView: View {
                     }
                     
                     // Status text
-                    Text(speechService.isRecording ? "🎤 Listening..." : "Tap button below to start")
+                    Text(speechService.isRecording ? "Listening..." : "Tap button below to start")
                         .font(.title2)
                         .fontWeight(.semibold)
                     
@@ -98,21 +94,12 @@ struct VoiceInputView: View {
                         } else {
                             Button(action: startRecording) {
                                 HStack {
-                                    Image(systemName: "mic.circle.fill")
                                     Text("Start Recording")
                                         .fontWeight(.semibold)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(
-                                    LinearGradient(
-                                        colors: [.purple, .pink],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .foregroundColor(.white)
-                                .cornerRadius(15)
+                                .glassEffect(.regular, in: .rect(cornerRadius: 24))
                             }
                             .padding(.horizontal)
                         }
@@ -133,7 +120,7 @@ struct VoiceInputView: View {
                 }
                 .padding(.vertical)
             }
-            .navigationTitle("🎤 Voice Expense")
+            .navigationTitle("Voice Expense")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
