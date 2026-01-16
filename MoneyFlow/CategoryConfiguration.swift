@@ -20,48 +20,48 @@ struct CategoryConfiguration: CategoryConfigurable {
     let icon: String
     let color: Color
     
-    // MARK: - Predefined Categories
+    // MARK: - Predefined Categories with Material 3 Colors
     
     static let food = CategoryConfiguration(
         name: "Food",
         icon: "fork.knife",
-        color: .blue
+        color: Color(red: 0.25, green: 0.71, blue: 0.29) // Material Green #43B73F
     )
     
     static let transport = CategoryConfiguration(
         name: "Transport",
         icon: "car.fill",
-        color: .blue
+        color: Color(red: 0.13, green: 0.59, blue: 0.95) // Material Blue #2196F3
     )
     
     static let entertainment = CategoryConfiguration(
         name: "Entertainment",
         icon: "gamecontroller.fill",
-        color: .blue
+        color: Color(red: 0.61, green: 0.15, blue: 0.69) // Material Purple #9C27B0
     )
     
     static let shopping = CategoryConfiguration(
         name: "Shopping",
         icon: "cart.fill",
-        color: .blue
+        color: Color(red: 1.0, green: 0.34, blue: 0.13) // Material Deep Orange #FF5722
     )
     
     static let travel = CategoryConfiguration(
         name: "Travel",
         icon: "airplane",
-        color: .blue
+        color: Color(red: 0.0, green: 0.74, blue: 0.83) // Material Cyan #00BCD4
     )
     
     static let medical = CategoryConfiguration(
         name: "Medical",
         icon: "cross.case.fill",
-        color: .blue
+        color: Color(red: 0.96, green: 0.26, blue: 0.21) // Material Red #F44336
     )
     
     static let other = CategoryConfiguration(
         name: "Other",
         icon: "dollarsign.circle.fill",
-        color: .blue
+        color: Color(red: 0.38, green: 0.49, blue: 0.55) // Material Blue Grey #607D8B
     )
 }
 
