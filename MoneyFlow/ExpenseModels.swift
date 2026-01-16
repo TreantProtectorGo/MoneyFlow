@@ -18,6 +18,9 @@ final class Expense {
     var longitude: Double?
     var locationAddress: String?
     
+    // Hidden value for total calculation (Base Currency: HKD)
+    var amountInBaseCurrency: Double?
+    
     var paidBy: User?
     var belongsToGroup: Group?
     
@@ -32,7 +35,18 @@ final class Expense {
         self.receiptImageData = receiptImageData
         self.latitude = latitude
         self.longitude = longitude
+        self.longitude = longitude
         self.locationAddress = locationAddress
+        self.amountInBaseCurrency = nil // Will be calculated if not provided
+    }
+    
+    /// Calculate and update base currency amount
+    func updateBaseCurrencyAmount(rateService: ExchangeRateService = .shared) {
+        if currency == "HKD" {
+            amountInBaseCurrency = amount
+        } else {
+            amountInBaseCurrency = rateService.convert(amount, from: currency, to: "HKD")
+        }
     }
     
     /// Check if expense has location

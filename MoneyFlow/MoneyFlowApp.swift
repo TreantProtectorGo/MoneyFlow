@@ -28,6 +28,10 @@ struct MoneyFlowApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .task {
+                    // Fetch exchange rates on launch
+                    await ExchangeRateService.shared.fetchRates()
+                }
         }
         .modelContainer(sharedModelContainer)
     }

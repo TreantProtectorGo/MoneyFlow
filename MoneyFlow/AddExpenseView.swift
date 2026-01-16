@@ -58,6 +58,18 @@ struct AddExpenseView: View {
                         .glassEffect(.regular, in: .rect(cornerRadius: 24))
                         .padding(.horizontal)
                         
+                        // Exchange Rate info (Hidden value display)
+                        if currency != "HKD", let amountVal = Double(amount) {
+                            if let converted = ExchangeRateService.shared.convert(amountVal, from: currency, to: "HKD") {
+                                Text("≈ \(converted, specifier: "%.2f") HKD")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                    .padding(.horizontal, 32)
+                                    .padding(.top, -10)
+                            }
+                        }
+                        
                         // Category & Date Card
                         VStack(spacing: 0) {
                             // Category
@@ -196,6 +208,9 @@ struct AddExpenseView: View {
             date: date,
             note: nil
         )
+        
+        // Calculate hidden base currency amount
+        newExpense.updateBaseCurrencyAmount()
         
         modelContext.insert(newExpense)
         

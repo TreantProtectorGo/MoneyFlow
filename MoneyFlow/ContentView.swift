@@ -239,16 +239,18 @@ struct TotalExpenseCard: View {
     let expenses: [Expense]
     
     var totalAmount: Double {
-        expenses.reduce(0) { $0 + $1.amount }
+        expenses.reduce(0) { sum, expense in
+            sum + (expense.amountInBaseCurrency ?? expense.amount)
+        }
     }
     
     var body: some View {
         VStack(spacing: 12) {
-            Text("Total Expenses")
+            Text("Total Expenses (HKD)")
                 .font(.caption)
                 .foregroundColor(.secondary)
             
-            Text("$\(totalAmount, specifier: "%.2f")")
+            Text("HK$\(totalAmount, specifier: "%.2f")")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(.primary)
             
