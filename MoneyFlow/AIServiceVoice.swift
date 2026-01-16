@@ -1,8 +1,10 @@
 //
-//  AIService+Voice.swift
+//  AIServiceVoice.swift
 //  MoneyFlow
 //
 //  Created by Wing - on 2026/1/3.
+//
+//  Voice Intent Parsing Extension using OpenRouter API
 //
 
 import Foundation
@@ -14,7 +16,7 @@ extension AIService {
     /// Extract expense intent from voice text
     func extractExpenseFromVoice(_ voiceText: String) async throws -> ExtractedExpenseData {
         // Fallback to local rules if no API key available
-        guard let apiKey = ProcessInfo.processInfo.environment["OPENAI_API_KEY"], !apiKey.isEmpty else {
+        guard let apiKey = ProcessInfo.processInfo.environment["OPENROUTER_API_KEY"], !apiKey.isEmpty else {
             return extractVoiceWithLocalRules(from: voiceText)
         }
         
@@ -32,9 +34,11 @@ extension AIService {
         Respond in JSON format. Set to null if information is uncertain.
         """
         
-        let endpoint = "https://api.openai.com/v1/chat/completions"
+        let endpoint = "https://openrouter.ai/api/v1/chat/completions"
+        let model = "openai/gpt-oss-20b:free"
+        
         let requestBody: [String: Any] = [
-            "model": "gpt-4o-mini",
+            "model": model,
             "messages": [
                 ["role": "system", "content": systemPrompt],
                 ["role": "user", "content": voiceText]
@@ -51,6 +55,8 @@ extension AIService {
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("MoneyFlow/1.0", forHTTPHeaderField: "HTTP-Referer")
+        request.setValue("MoneyFlow Expense Tracker", forHTTPHeaderField: "X-Title")
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
         request.timeoutInterval = 30
         

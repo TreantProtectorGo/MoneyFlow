@@ -4,6 +4,8 @@
 //
 //  Created by Wing - on 2026/1/3.
 //
+//  AI Service using OpenRouter API (free gpt-oss-20b model)
+//
 
 import Foundation
 
@@ -22,11 +24,12 @@ struct ExtractedExpenseData {
 class AIService {
     
     private let apiKey: String?
-    private let endpoint = "https://api.openai.com/v1/chat/completions"
+    private let endpoint = "https://openrouter.ai/api/v1/chat/completions"
+    private let model = "openai/gpt-oss-20b:free"
     
     init(apiKey: String? = nil) {
         // Use provided API key, otherwise fallback to env variable
-        self.apiKey = apiKey ?? ProcessInfo.processInfo.environment["OPENAI_API_KEY"]
+        self.apiKey = apiKey ?? ProcessInfo.processInfo.environment["OPENROUTER_API_KEY"]
     }
     
     enum AIError: LocalizedError {
@@ -38,7 +41,7 @@ class AIService {
         var errorDescription: String? {
             switch self {
             case .noAPIKey:
-                return "OpenAI API key not configured"
+                return "OpenRouter API key not configured"
             case .invalidResponse:
                 return "Invalid API response format"
             case .networkError(let reason):
@@ -70,7 +73,7 @@ class AIService {
         """
         
         let requestBody: [String: Any] = [
-            "model": "gpt-4o-mini",
+            "model": model,
             "messages": [
                 ["role": "system", "content": systemPrompt],
                 ["role": "user", "content": combinedText]
@@ -87,6 +90,8 @@ class AIService {
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("MoneyFlow/1.0", forHTTPHeaderField: "HTTP-Referer")
+        request.setValue("MoneyFlow Expense Tracker", forHTTPHeaderField: "X-Title")
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
         request.timeoutInterval = 30
         
