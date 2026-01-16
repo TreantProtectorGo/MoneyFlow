@@ -53,7 +53,7 @@ struct EditExpenseView: View {
                                     .fill(Color(.systemBackground))
                             )
                         }
-                        .glassEffect()
+                        .glassEffect(.regular, in: .rect(cornerRadius: 24))
                         .padding(.horizontal)
                         
                         // Category & Date Card
@@ -112,7 +112,7 @@ struct EditExpenseView: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color(.systemBackground))
                         )
-                        .glassEffect()
+                        .glassEffect(.regular, in: .rect(cornerRadius: 24))
                         .padding(.horizontal)
                         
                         // Description - OPTIONAL
@@ -129,7 +129,7 @@ struct EditExpenseView: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color(.systemBackground))
                         )
-                        .glassEffect()
+                        .glassEffect(.regular, in: .rect(cornerRadius: 24))
                         .padding(.horizontal)
                     }
                     .padding(.top, 8)
