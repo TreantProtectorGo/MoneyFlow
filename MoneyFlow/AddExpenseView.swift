@@ -55,34 +55,40 @@ struct AddExpenseView: View {
                                     .fill(Color(.systemBackground))
                             )
                         }
+                        .glassEffect(.regular, in: .rect(cornerRadius: 24))
                         .padding(.horizontal)
                         
                         // Category & Date Card
                         VStack(spacing: 0) {
-                            // Category - Horizontal Scroll
-                            VStack(alignment: .leading, spacing: 8) {
+                            // Category
+
+                            VStack(alignment: .leading, spacing: 10) {
                                 Text("Category")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
                                     .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
                                 
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 12) {
-                                        ForEach(categories, id: \.self) { cat in
-                                            CategoryChip(
-                                                category: cat,
-                                                isSelected: category == cat
-                                            ) {
-                                                withAnimation(.spring(response: 0.3)) {
-                                                    category = cat
-                                                }
-                                            }
+                                LazyVGrid(
+                                    columns: [
+                                        GridItem(.flexible(), spacing: 10),
+                                        GridItem(.flexible(), spacing: 10),
+                                        GridItem(.flexible(), spacing: 10)
+                                    ],
+                                    spacing: 10
+                                ) {
+                                    ForEach(categories, id: \.self) { cat in
+                                        CategoryChip(
+                                            category: cat,
+                                            isSelected: category == cat
+                                        ) {
+                                            let generator = UIImpactFeedbackGenerator(style: .light)
+                                            generator.impactOccurred()
+                                            
+                                            category = cat
                                         }
                                     }
-                                    .padding(.horizontal, 16)
                                 }
+                                .padding(.horizontal, 16)
                             }
-                            .padding(.vertical, 12)
                             
                             Divider()
                                 .padding(.leading, 16)
@@ -108,6 +114,7 @@ struct AddExpenseView: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color(.systemBackground))
                         )
+                        .glassEffect(.regular, in: .rect(cornerRadius: 24))
                         .padding(.horizontal)
                         
                         // Description - OPTIONAL (Combined merchant + note)
@@ -124,6 +131,7 @@ struct AddExpenseView: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color(.systemBackground))
                         )
+                        .glassEffect(.regular, in: .rect(cornerRadius: 24))
                         .padding(.horizontal)
                     }
                     .padding(.top, 8)
@@ -199,27 +207,39 @@ struct CategoryChip: View {
     let isSelected: Bool
     let action: () -> Void
     
-    var categoryIcon: String {
-        CategoryManager.shared.icon(for: category)
+    var icon: String {
+        switch category {
+        case "Food": return "fork.knife"
+        case "Transport": return "car.fill"
+        case "Entertainment": return "gamecontroller.fill"
+        case "Shopping": return "cart.fill"
+        case "Travel": return "airplane"
+        case "Medical": return "cross.case.fill"
+        case "Other": return "dollarsign.circle.fill"
+        default: return "tag.fill"
+        }
     }
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: categoryIcon)
-                    .font(.title3)
-                    .foregroundColor(isSelected ? .white : .blue)
+            VStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: .medium)) 
                 
                 Text(category)
-                    .font(.caption2)
-                    .foregroundColor(isSelected ? .white : .secondary)
+                    .font(.system(size: 13, weight: .medium))
+                    .lineLimit(1) 
+                    .minimumScaleFactor(0.7) 
             }
-            .frame(width: 70)
-            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .frame(height: 80)
+            .foregroundColor(isSelected ? .white : .primary)
             .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(isSelected ? Color.blue : Color(.systemGray6))
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(isSelected ? Color.blue : Color(.systemGray6)) 
             )
+            .scaleEffect(isSelected ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
         }
         .buttonStyle(.plain)
     }

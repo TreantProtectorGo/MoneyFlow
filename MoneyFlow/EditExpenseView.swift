@@ -53,34 +53,40 @@ struct EditExpenseView: View {
                                     .fill(Color(.systemBackground))
                             )
                         }
+                        .glassEffect()
                         .padding(.horizontal)
                         
                         // Category & Date Card
                         VStack(spacing: 0) {
                             // Category
-                            VStack(alignment: .leading, spacing: 8) {
+
+                            VStack(alignment: .leading, spacing: 10) {
                                 Text("Category")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
                                     .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
                                 
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 12) {
-                                        ForEach(categories, id: \.self) { cat in
-                                            CategoryChip(
-                                                category: cat,
-                                                isSelected: category == cat
-                                            ) {
-                                                withAnimation(.spring(response: 0.3)) {
-                                                    category = cat
-                                                }
-                                            }
+                                LazyVGrid(
+                                    columns: [
+                                        GridItem(.flexible(), spacing: 10),
+                                        GridItem(.flexible(), spacing: 10),
+                                        GridItem(.flexible(), spacing: 10)
+                                    ],
+                                    spacing: 10
+                                ) {
+                                    ForEach(categories, id: \.self) { cat in
+                                        CategoryChip(
+                                            category: cat,
+                                            isSelected: category == cat
+                                        ) {
+                                            let generator = UIImpactFeedbackGenerator(style: .light)
+                                            generator.impactOccurred()
+                                            
+                                            category = cat
                                         }
                                     }
-                                    .padding(.horizontal, 16)
                                 }
+                                .padding(.horizontal, 16)
                             }
-                            .padding(.vertical, 12)
                             
                             Divider()
                                 .padding(.leading, 16)
@@ -106,6 +112,7 @@ struct EditExpenseView: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color(.systemBackground))
                         )
+                        .glassEffect()
                         .padding(.horizontal)
                         
                         // Description - OPTIONAL
@@ -122,6 +129,7 @@ struct EditExpenseView: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color(.systemBackground))
                         )
+                        .glassEffect()
                         .padding(.horizontal)
                     }
                     .padding(.top, 8)
