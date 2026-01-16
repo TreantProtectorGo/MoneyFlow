@@ -20,8 +20,8 @@ struct AddExpenseView: View {
     
     @FocusState private var isAmountFocused: Bool
     
-    let categories = ["Food", "Transport", "Entertainment", "Shopping", "Travel", "Medical", "Other"]
-    let currencies = ["HKD", "USD", "CNY", "JPY", "EUR", "GBP"]
+    var categories: [String] { CategoryManager.shared.allCategoryNames }
+    var currencies: [String] { CurrencyManager.shared.allCurrencyCodes }
     
     var body: some View {
         NavigationStack {

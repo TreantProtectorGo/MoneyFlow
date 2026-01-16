@@ -19,8 +19,8 @@ struct EditExpenseView: View {
     @State private var date: Date = Date()
     @State private var description: String = ""
     
-    let categories = ["Food", "Transport", "Entertainment", "Shopping", "Travel", "Medical", "Other"]
-    let currencies = ["HKD", "USD", "CNY", "JPY", "EUR", "GBP"]
+    var categories: [String] { CategoryManager.shared.allCategoryNames }
+    var currencies: [String] { CurrencyManager.shared.allCurrencyCodes }
     
     var body: some View {
         NavigationStack {
