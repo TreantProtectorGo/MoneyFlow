@@ -25,7 +25,7 @@ class AIService {
     
     private let apiKey: String?
     private let endpoint = "https://openrouter.ai/api/v1/chat/completions"
-    private let model = "openai/gpt-oss-20b:free"
+    private let model = "qwen/qwen-2.5-vl-7b-instruct:free"
     
     init(apiKey: String? = nil) {
         // Use provided API key, otherwise fallback to env variable
@@ -61,24 +61,44 @@ class AIService {
         
         let combinedText = ocrText.joined(separator: "\n")
         
-        let systemPrompt = """
+        let prompt = """
         You are an assistant specialized in extracting information from receipts. Please extract:
         1. merchant: Merchant name
-        2. amount: Amount (number only)
+        2. amount: The TOTAL amount of the transaction. Look for "Total", "Grand Total", "Sum", "總額", "總計", "應付", "Amount". It is usually the largest amount at the bottom. Do NOT extract individual item prices.
         3. currency: Currency code (HKD, USD, CNY, JPY, EUR, GBP)
         4. date: Date (ISO 8601 format)
         5. category: Expense category (choose from: Food, Transport, Entertainment, Shopping, Travel, Medical, Other)
         
         Respond in JSON format. Set to null if information is uncertain.
+        
+        Receipt text:
+        \(combinedText)
         """
         
         let requestBody: [String: Any] = [
             "model": model,
             "messages": [
-                ["role": "system", "content": systemPrompt],
-                ["role": "user", "content": combinedText]
+                ["role": "user", "content": prompt]
             ],
-            "response_format": ["type": "json_object"],
+            "response_format": [
+                "type": "json_schema",
+                "json_schema": [
+                    "name": "expense_data",
+                    "strict": true,
+                    "schema": [
+                        "type": "object",
+                        "properties": [
+                            "merchant": ["type": ["string", "null"], "description": "Merchant name"],
+                            "amount": ["type": ["number", "null"], "description": "Amount (number only)"],
+                            "currency": ["type": ["string", "null"], "description": "Currency code (e.g. HKD, USD)"],
+                            "date": ["type": ["string", "null"], "description": "Date in ISO 8601 format"],
+                            "category": ["type": ["string", "null"], "description": "Expense category"]
+                        ],
+                        "required": ["merchant", "amount", "currency", "date", "category"],
+                        "additionalProperties": false
+                    ]
+                ]
+            ],
             "temperature": 0.3
         ]
         
@@ -97,9 +117,15 @@ class AIService {
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw AIError.networkError("HTTP status code error")
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AIError.networkError("Invalid response")
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            // Try to parse error message from response
+            let errorBody = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("API Error (\(httpResponse.statusCode)): \(errorBody)")
+            throw AIError.networkError("HTTP \(httpResponse.statusCode): \(errorBody.prefix(100))")
         }
         
         return try parseAIResponse(data)
@@ -107,18 +133,45 @@ class AIService {
     
     /// Parse AI API response
     private func parseAIResponse(_ data: Data) throws -> ExtractedExpenseData {
+        // Debug: Print raw response
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("🤖 AI Raw Response: \(responseString)")
+        }
+        
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let choices = json["choices"] as? [[String: Any]],
               let firstChoice = choices.first,
               let message = firstChoice["message"] as? [String: Any],
-              let content = message["content"] as? String,
-              let contentData = content.data(using: .utf8),
+              var content = message["content"] as? String else {
+            throw AIError.invalidResponse
+        }
+        
+        // Clean markdown code blocks if present (e.g. ```json ... ```)
+        if content.contains("```") {
+            content = content.replacingOccurrences(of: "```json", with: "")
+            content = content.replacingOccurrences(of: "```", with: "")
+        }
+        content = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard let contentData = content.data(using: .utf8),
               let extractedData = try JSONSerialization.jsonObject(with: contentData) as? [String: Any] else {
+            print("❌ Failed to parse content JSON: \(content)")
             throw AIError.invalidResponse
         }
         
         let merchant = extractedData["merchant"] as? String
-        let amount = extractedData["amount"] as? Double
+        
+        // Handle amount as Double or String
+        var amount: Double?
+        if let amountDouble = extractedData["amount"] as? Double {
+            amount = amountDouble
+        } else if let amountString = extractedData["amount"] as? String {
+            // Remove any currency symbols or commas if present, though schema says number only
+            let cleanString = amountString.replacingOccurrences(of: ",", with: "")
+                .trimmingCharacters(in: CharacterSet(charactersIn: "$£€¥HKD "))
+            amount = Double(cleanString)
+        }
+        
         let currency = extractedData["currency"] as? String
         let category = extractedData["category"] as? String
         
@@ -143,8 +196,10 @@ class AIService {
         var amount: Double?
         var currency: String = "HKD"
         var detectedDate: Date?
+        var category: String?
         
         let combinedText = ocrText.joined(separator: " ")
+        let lowerText = combinedText.lowercased()
         
         // Extract amount - supports multiple formats
         let amountPatterns = [
@@ -189,12 +244,38 @@ class AIService {
             detectedDate = formatter.date(from: dateString)
         }
         
+        // Detect category from keywords
+        let categoryKeywords: [(keywords: [String], category: String)] = [
+            // Food - 飲食 (English and Chinese)
+            (["restaurant", "cafe", "coffee", "food", "lunch", "dinner", "breakfast", "meal", "pizza", "burger", "sushi", "noodle", "tea", "drink", "bar", "bakery", "starbucks", "mcdonald", "kfc", "subway", "飲食", "餐廳", "咖啡", "茶", "飯", "麵", "早餐", "午餐", "晚餐", "外賣", "堂食", "餐", "食", "吃", "喝", "小食", "甜品", "雪糕", "蛋糕", "麵包", "奶茶", "珍珠奶茶", "boba"], "Food"),
+            // Transport
+            (["taxi", "uber", "grab", "bus", "train", "metro", "mtr", "subway", "parking", "fuel", "petrol", "gas", "交通", "的士", "巴士", "地鐵", "港鐵", "停車", "油站", "加油"], "Transport"),
+            // Entertainment
+            (["movie", "cinema", "game", "concert", "show", "ticket", "娛樂", "電影", "遊戲", "演唱會", "門票"], "Entertainment"),
+            // Shopping
+            (["shop", "store", "mall", "market", "supermarket", "grocery", "purchase", "購物", "商店", "商場", "超市", "百貨", "街市"], "Shopping"),
+            // Travel
+            (["hotel", "flight", "airline", "airport", "booking", "旅遊", "酒店", "機票", "航空", "機場"], "Travel"),
+            // Medical
+            (["hospital", "clinic", "pharmacy", "doctor", "medicine", "醫療", "醫院", "診所", "藥房", "醫生", "藥"], "Medical")
+        ]
+        
+        for (keywords, cat) in categoryKeywords {
+            for keyword in keywords {
+                if lowerText.contains(keyword) {
+                    category = cat
+                    break
+                }
+            }
+            if category != nil { break }
+        }
+        
         return ExtractedExpenseData(
             merchant: merchant,
             amount: amount,
             currency: currency,
             date: detectedDate,
-            category: nil
+            category: category
         )
     }
 }

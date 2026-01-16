@@ -200,10 +200,23 @@ struct ContentView: View {
                 AddExpenseView(modelContext: modelContext)
             }
             .sheet(isPresented: $showingCamera) {
-                CameraView { _ in }
+                CameraView()
             }
             .sheet(isPresented: $showingVoiceInput) {
-                VoiceInputView { _ in }
+                VoiceInputView { extractedData in
+                    // Create expense from voice data
+                    if extractedData.isValid {
+                        let expense = Expense(
+                            amount: extractedData.amount ?? 0,
+                            currency: extractedData.currency ?? "HKD",
+                            merchant: extractedData.merchant ?? "Unknown",
+                            category: extractedData.category ?? "Other",
+                            date: extractedData.date ?? Date()
+                        )
+                        modelContext.insert(expense)
+                        try? modelContext.save()
+                    }
+                }
             }
             .sheet(isPresented: $showingMonthPicker) {
                 MonthPickerView(selectedDate: $selectedDate)

@@ -20,7 +20,7 @@ extension AIService {
             return extractVoiceWithLocalRules(from: voiceText)
         }
         
-        let systemPrompt = """
+        let prompt = """
         You are a voice expense tracking assistant. Users describe expenses in natural language. Extract:
         1. merchant: Merchant name
         2. amount: Amount (number only)
@@ -28,22 +28,38 @@ extension AIService {
         4. date: Date (convert "today", "yesterday" to ISO 8601; null if not mentioned)
         5. category: Expense category (choose from: Food, Transport, Entertainment, Shopping, Travel, Medical, Other)
         
-        Example input: "Spent eighty-five dollars at Starbucks"
-        Example output: {"merchant": "Starbucks", "amount": 85, "currency": "HKD", "date": null, "category": "Food"}
+        Respond in JSON format only. Set to null if information is uncertain.
         
-        Respond in JSON format. Set to null if information is uncertain.
+        User said: \(voiceText)
         """
         
         let endpoint = "https://openrouter.ai/api/v1/chat/completions"
-        let model = "openai/gpt-oss-20b:free"
+        let model = "qwen/qwen-2.5-vl-7b-instruct:free"
         
         let requestBody: [String: Any] = [
             "model": model,
             "messages": [
-                ["role": "system", "content": systemPrompt],
-                ["role": "user", "content": voiceText]
+                ["role": "user", "content": prompt]
             ],
-            "response_format": ["type": "json_object"],
+            "response_format": [
+                "type": "json_schema",
+                "json_schema": [
+                    "name": "expense_data",
+                    "strict": true,
+                    "schema": [
+                        "type": "object",
+                        "properties": [
+                            "merchant": ["type": ["string", "null"], "description": "Merchant name"],
+                            "amount": ["type": ["number", "null"], "description": "Amount (number only)"],
+                            "currency": ["type": ["string", "null"], "description": "Currency code (default HKD)"],
+                            "date": ["type": ["string", "null"], "description": "Date in ISO 8601 format"],
+                            "category": ["type": ["string", "null"], "description": "Expense category"]
+                        ],
+                        "required": ["merchant", "amount", "currency", "date", "category"],
+                        "additionalProperties": false
+                    ]
+                ]
+            ],
             "temperature": 0.3
         ]
         
@@ -62,24 +78,56 @@ extension AIService {
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw AIError.networkError("HTTP status code error")
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AIError.networkError("Invalid response")
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            let errorBody = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("API Error (\(httpResponse.statusCode)): \(errorBody)")
+            throw AIError.networkError("HTTP \(httpResponse.statusCode)")
         }
         
         // Parse response
+        // Parse response
+        // Debug: Print raw response
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("🤖 Voice AI Raw Response: \(responseString)")
+        }
+        
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let choices = json["choices"] as? [[String: Any]],
               let firstChoice = choices.first,
               let message = firstChoice["message"] as? [String: Any],
-              let content = message["content"] as? String,
-              let contentData = content.data(using: .utf8),
+              var content = message["content"] as? String else {
+            throw AIError.invalidResponse
+        }
+        
+        // Clean markdown code blocks if present (e.g. ```json ... ```)
+        if content.contains("```") {
+            content = content.replacingOccurrences(of: "```json", with: "")
+            content = content.replacingOccurrences(of: "```", with: "")
+        }
+        content = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard let contentData = content.data(using: .utf8),
               let extractedData = try JSONSerialization.jsonObject(with: contentData) as? [String: Any] else {
+            print("❌ Failed to parse content JSON: \(content)")
             throw AIError.invalidResponse
         }
         
         let merchant = extractedData["merchant"] as? String
-        let amount = extractedData["amount"] as? Double
+        
+        // Handle amount as Double or String
+        var amount: Double?
+        if let amountDouble = extractedData["amount"] as? Double {
+            amount = amountDouble
+        } else if let amountString = extractedData["amount"] as? String {
+            let cleanString = amountString.replacingOccurrences(of: ",", with: "")
+                .trimmingCharacters(in: CharacterSet(charactersIn: "$£€¥HKD "))
+            amount = Double(cleanString)
+        }
+        
         let currency = extractedData["currency"] as? String
         let category = extractedData["category"] as? String
         
