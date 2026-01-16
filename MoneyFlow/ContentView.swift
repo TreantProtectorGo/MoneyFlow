@@ -17,6 +17,15 @@ struct ContentView: View {
     @State private var selectedDate = Date()
     @State private var showingMonthPicker = false
     
+    // Search & Filter States
+    @State private var searchText = ""
+    @State private var isSearchExpanded = false
+    @State private var showingFilters = false
+    @State private var selectedCategories: Set<String> = []
+    @State private var minAmount = ""
+    @State private var maxAmount = ""
+    @State private var dateRange: DateRange = .all
+
     
     var currentMonthYear: String {
         let formatter = DateFormatter()
@@ -25,7 +34,35 @@ struct ContentView: View {
     }
     
     var filteredExpenses: [Expense] {
-        Calendar.filterExpenses(expenses, for: selectedDate)
+        var result = Calendar.filterExpenses(expenses, for: selectedDate)
+        
+        // Search filter
+        if !searchText.isEmpty {
+            result = result.filter { expense in
+                expense.merchant.localizedCaseInsensitiveContains(searchText) ||
+                expense.category.localizedCaseInsensitiveContains(searchText) ||
+                (expense.note ?? "").localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        
+        // Category filter
+        if !selectedCategories.isEmpty {
+            result = result.filter { selectedCategories.contains($0.category) }
+        }
+        
+        // Amount filter
+        if let min = Double(minAmount), min > 0 {
+            result = result.filter { $0.amount >= min }
+        }
+        if let max = Double(maxAmount), max > 0 {
+            result = result.filter { $0.amount <= max }
+        }
+        
+        return result
+    }
+    
+    var hasActiveFilters: Bool {
+        !selectedCategories.isEmpty || !minAmount.isEmpty || !maxAmount.isEmpty
     }
     
     func previousMonth() {
@@ -83,6 +120,31 @@ struct ContentView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
+                    .padding(.bottom, 8)
+                    
+                    
+                    // Search & Filter Bar
+                    HStack(spacing: 12) {
+                        SearchBarView(searchText: $searchText, isExpanded: $isSearchExpanded)
+                        
+                        if !isSearchExpanded {
+                            // Filter Button
+                            Button(action: {
+                                showingFilters = true
+                            }) {
+                                Image(systemName: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(hasActiveFilters ? .blue : .secondary)
+                                    .frame(width: 44, height: 44)
+                                    .background(
+                                        Circle()
+                                            .fill(Color.white)
+                                            .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
+                                    )
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
                     .padding(.bottom, 8)
                     
                     // Total expense card
@@ -147,6 +209,15 @@ struct ContentView: View {
                     .presentationDetents([.height(250)])
             }
         }
+            .sheet(isPresented: $showingFilters) {
+                FilterSheet(
+                    selectedCategories: $selectedCategories,
+                    minAmount: $minAmount,
+                    maxAmount: $maxAmount,
+                    dateRange: $dateRange
+                )
+                .presentationDetents([.medium, .large])
+            }
     }
     }
 // MARK: - Total Expense Card
